@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Env and secrets
+.env
+.env.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS junk
+Thumbs.db
+Desktop.ini
+
+# VS Code
+.vscode/
+
+# Build outputs
+dist/
+build/
+node_modules/
+.env
+.env.local
+.DS_Store
+*.log
