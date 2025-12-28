@@ -30,6 +30,8 @@ const telegramBot = new TelegramBot(
   process.env.TELEGRAM_BOT_TOKEN,
   process.env.TELEGRAM_CHAT_ID
 );
+// Provide tokens list to the Telegram bot for on-demand alerts
+telegramBot.setTokens(RUNES);
 
 // Start Telegram bot
 telegramBot.start().catch(error => {
@@ -51,15 +53,21 @@ app.get('/', async (req, res) => {
           const message = formatPriceAlert(priceData);
           const buttonText = `Trade on ${priceData.lowest.exchange}`;
           const buttonUrl = priceData.lowest?.exchangeUrl || `https://www.coingecko.com/en/coins/${tokenId}`;
-          await telegramBot.sendMessageWithButton(message, buttonText, buttonUrl);
+          
           alertsSent++;
-          console.log(`✅ Alert sent for ${priceData.tokenName}!`);
+          
+          // Fire and forget - don't await the Telegram send
+          telegramBot
+            .sendMessageWithButton(message, buttonText, buttonUrl)
+            .then(() => {
+              console.log(`✅ Alert sent for ${priceData.tokenName}!`);
+            })
+            .catch(err => {
+              console.error(`❌ Failed to send alert for ${priceData.tokenName}:`, err.message);
+            });
         } else if (priceData) {
           console.log(`ℹ️ ${priceData.tokenName}: No significant price difference (${priceData.priceDiff.toFixed(2)}%)`);
         }
-        
-        // Small delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000));
       } catch (error) {
         console.error(`❌ Error checking ${tokenId}:`, error.message);
       }

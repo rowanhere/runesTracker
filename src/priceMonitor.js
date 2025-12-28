@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Untrusted exchanges to exclude
-const EXCLUDED_EXCHANGES = ['Meteora', 'Orca', 'Gate', 'AscendEX (BitMax)', 'UniSat (Runes)'];
+const EXCLUDED_EXCHANGES = ['Meteora', 'Orca', 'Gate', 'AscendEX (BitMax)', 'UniSat (Runes)', 'Kraken'];
 
 // Threshold for price difference to trigger notification (in percentage)
 const PRICE_DIFF_THRESHOLD = 10; // 10%
