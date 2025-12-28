@@ -1,16 +1,12 @@
-# Telegram Notification Server
+# Runes Tracker
 
-A Node.js Express backend server that sends recurring Telegram notifications every 10 minutes.
+Tracks Rune tokens across exchanges, detects price differences, and sends clean Telegram alerts with inline trade buttons.
 
 ## Features
 
-- ✅ Express HTTP server
+- ✅ Telegram bot integration (Telegraf)
 - ✅ Recurring tasks using node-cron (every 10 minutes)
-- ✅ Telegram bot integration
-- ✅ Health check endpoint
-- ✅ Custom notification API
 - ✅ Error handling and logging
-- ✅ Graceful shutdown
 
 ## Prerequisites
 
@@ -29,22 +25,13 @@ Edit `.env` and add your credentials:
 ```env
 TELEGRAM_BOT_TOKEN=your_bot_token_here
 TELEGRAM_CHAT_ID=your_chat_id_here
-PORT=3000
-NODE_ENV=development
+NODE_ENV=production
 ```
 
 ### How to Get Telegram Credentials
 
 1. **Bot Token**: Message [@BotFather](https://t.me/botfather) on Telegram and create a new bot
 2. **Chat ID**: Message your bot, then visit `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates` to find your chat ID
-
-## Running the Server
-
-### Development (with auto-reload)
-
-# runesTracker
-
-Tracks Rune tokens across exchanges, detects price differences, and sends clean Telegram alerts with inline trade buttons.
 
 ## Setup
 
@@ -64,47 +51,15 @@ PORT=3000
 
 ## Run
 
-```bash
-npm run dev
-```
-
-Hit `GET /` to evaluate all configured Rune tokens and send alerts if criteria are met.
-
-### Production
+Start the Telegram bot (long polling):
 
 ```bash
 npm start
 ```
 
-The server will start on `http://localhost:3000`
-
 ## API Endpoints
 
-### Health Check
-
-```bash
-curl http://localhost:3000/health
-```
-
-Response:
-```json
-{
-  "status": "ok",
-  "timestamp": "2025-12-20T10:30:00.000Z",
-  "tasks": ["health-check"]
-}
-```
-
-### Send Custom Notification
-
-```bash
-curl -X POST http://localhost:3000/send-notification \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Alert",
-    "message": "This is a test notification"
-  }'
-```
+This bot-only build does not expose HTTP endpoints.
 
 ## Customizing Tasks
 
@@ -136,10 +91,49 @@ Common cron expressions:
 
 ```
 src/
-├── index.js          # Main server file
+├── bot.js            # Bot entry (long polling)
 ├── telegram.js       # Telegram bot wrapper
-└── scheduler.js      # Task scheduler
+├── priceMonitor.js   # Price checks + message formatting
+└── scheduler.js      # Optional task scheduler
 ```
+
+## Deployment
+
+### Persistent Node (recommended for long polling)
+
+Use an always-on runtime (Render/Railway/Fly.io/Heroku/EC2/Droplet) and run:
+
+```bash
+npm run start-bot
+```
+
+Required env vars: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`.
+
+### Serverless
+
+Serverless platforms are not suitable for long polling. Deploy this bot on a persistent host (Render/Railway/Fly.io/Heroku/VM) or adapt to a webhook-based design separately.
+
+## Docker
+
+### Build
+
+```bash
+docker build -t runes-tracker .
+```
+
+### Run (Bot mode – long polling)
+
+```bash
+docker run -d \
+  --name runes-bot \
+  --restart unless-stopped \
+  -e TELEGRAM_BOT_TOKEN=your_token \
+  -e TELEGRAM_CHAT_ID=your_chat_id \
+  runes-tracker
+```
+
+Notes:
+- This image runs the bot only (no HTTP server).
 
 ## License
 

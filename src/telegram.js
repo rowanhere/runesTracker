@@ -1,9 +1,12 @@
 import { Telegraf } from 'telegraf';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import { checkPriceDifference, formatPriceAlert } from './priceMonitor.js';
 
 class TelegramBot {
   constructor(botToken, chatId) {
-    this.bot = new Telegraf(botToken);
+    const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy;
+    const options = proxyUrl ? { telegram: { agent: new HttpsProxyAgent(proxyUrl) } } : undefined;
+    this.bot = new Telegraf(botToken, options);
     this.chatId = chatId;
     this.tokens = [];
     this.setupCallbackHandlers();
@@ -102,20 +105,9 @@ class TelegramBot {
   async start() {
     try {
       await this.bot.launch();
-      const botInfo = await this.bot.telegram.getMe();
-      console.log(`✓ Telegram bot connected: @${botInfo.username}`);
-
-      // Register bot commands for discoverability in Telegram clients
-      try {
-        await this.bot.telegram.setMyCommands([
-          { command: 'start', description: 'Show menu' },
-          { command: 'getalert', description: 'Fetch current alerts' }
-        ]);
-      } catch (e) {
-        console.warn('⚠️ Could not set bot commands:', e.message);
-      }
+      console.log('✓ Telegram bot launched (long polling)');
     } catch (error) {
-      console.error('✗ Failed to connect Telegram bot:', error.message);
+      console.error('✗ Failed to start bot:', error.message);
       throw error;
     }
   }
