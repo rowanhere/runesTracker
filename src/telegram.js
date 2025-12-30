@@ -88,30 +88,6 @@ class TelegramBot {
         await ctx.telegram.sendMessage(chatId, '⚠️ Failed to send list.');
       }
     });
-
-    // Command: /delete — delete all messages in the chat
-    this.bot.command('delete', async (ctx) => {
-      const chatId = ctx.chat?.id || this.chatId;
-      
-      try {
-        // Get chat info and delete all messages by getting message history
-        let deletedCount = 0;
-        
-        // Try to delete recent messages by iterating backwards from current
-        for (let messageId = ctx.message.message_id - 1; messageId > 0 && deletedCount < 100; messageId--) {
-          try {
-            await ctx.telegram.deleteMessage(chatId, messageId);
-            deletedCount++;
-          } catch (error) {
-            // Message doesn't exist or can't be deleted, continue
-          }
-        }
-        
-        await ctx.telegram.sendMessage(chatId, `✓ Deleted ${deletedCount} message(s).`);
-      } catch (error) {
-        console.error('✗ Failed to delete messages:', error.message);
-      }
-    });
   }
 
   async sendAlerts(chatId, ctx) {
