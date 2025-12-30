@@ -1,0 +1,5 @@
+services:
+  runes-tracker:
+    image: rowanhere/runes-tracker:latest
+    env_file: .env
+    restart: unless-stopped

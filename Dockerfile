@@ -12,6 +12,7 @@ COPY package.json package-lock.json* ./
 RUN npm ci --only=production || npm install --only=production
 
 # Copy source
+COPY index.js ./
 COPY src ./src
 COPY README.md ./README.md
 

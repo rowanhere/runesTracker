@@ -60,6 +60,58 @@ class TelegramBot {
       const chatId = ctx.chat?.id || this.chatId;
       await this.sendAlerts(chatId, ctx);
     });
+
+    // Command: /list — show RUNES as copyable plain text
+    this.bot.command('list', async (ctx) => {
+      const chatId = ctx.chat?.id || this.chatId;
+      const tokens = Array.isArray(this.tokens) ? this.tokens : [];
+      const copyText = tokens.join('\n');
+      const displayText = tokens.join('\n');
+      const message = `<b>Configured Runes</b>\n\n<pre>${displayText}</pre>`;
+      try {
+        await ctx.telegram.sendMessage(chatId, message, {
+          parse_mode: 'HTML',
+          disable_web_page_preview: true,
+          reply_markup: {
+            inline_keyboard: [
+              [
+                { text: '📋 Copy list', switch_inline_query_current_chat: copyText }
+              ],
+              [
+                { text: '✅ Done', callback_data: 'done' }
+              ]
+            ]
+          }
+        });
+      } catch (error) {
+        console.error('✗ Failed to send list:', error.message);
+        await ctx.telegram.sendMessage(chatId, '⚠️ Failed to send list.');
+      }
+    });
+
+    // Command: /delete — delete all messages in the chat
+    this.bot.command('delete', async (ctx) => {
+      const chatId = ctx.chat?.id || this.chatId;
+      
+      try {
+        // Get chat info and delete all messages by getting message history
+        let deletedCount = 0;
+        
+        // Try to delete recent messages by iterating backwards from current
+        for (let messageId = ctx.message.message_id - 1; messageId > 0 && deletedCount < 100; messageId--) {
+          try {
+            await ctx.telegram.deleteMessage(chatId, messageId);
+            deletedCount++;
+          } catch (error) {
+            // Message doesn't exist or can't be deleted, continue
+          }
+        }
+        
+        await ctx.telegram.sendMessage(chatId, `✓ Deleted ${deletedCount} message(s).`);
+      } catch (error) {
+        console.error('✗ Failed to delete messages:', error.message);
+      }
+    });
   }
 
   async sendAlerts(chatId, ctx) {
@@ -74,14 +126,11 @@ class TelegramBot {
         const priceData = await checkPriceDifference(tokenId);
         if (priceData && priceData.shouldNotify) {
           const message = formatPriceAlert(priceData);
-          const buttonText = `Trade on ${priceData.lowest.exchange}`;
-          const buttonUrl = priceData.lowest?.exchangeUrl || `https://www.coingecko.com/en/coins/${tokenId}`;
           await ctx.telegram.sendMessage(chatId, message, {
             parse_mode: 'HTML',
             disable_web_page_preview: true,
             reply_markup: {
               inline_keyboard: [
-                [{ text: buttonText, url: buttonUrl }],
                 [{ text: '✅ Done', callback_data: 'done' }]
               ]
             }

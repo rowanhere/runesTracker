@@ -11,4 +11,4 @@ npm-debug.log*
 coverage
 
 Dockerfile
-docker-entrypoint.sh
+

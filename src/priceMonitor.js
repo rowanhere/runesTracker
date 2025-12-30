@@ -9,7 +9,8 @@ const PRICE_DIFF_THRESHOLD = 10; // 10%
 export async function checkPriceDifference(tokenId = 'rune-pups') {
   try {
     // Fetch market data
-    const apiUrl = `https://api.coingecko.com/api/v3/coins/${tokenId}?localization=false&tickers=true&market_data=false&community_data=false&developer_data=false&x_cg_demo_api_key=CG-15UFGRkXhyq9yGWGpxksHWr5`;
+    const apiKey = process.env.COINGECKO_DEMO_API_KEY || 'CG-15UFGRkXhyq9yGWGpxksHWr5';
+    const apiUrl = `https://api.coingecko.com/api/v3/coins/${tokenId}?localization=false&tickers=true&market_data=false&community_data=false&developer_data=false&x_cg_demo_api_key=${apiKey}`;
     
     // Use corsproxy.io - fast and reliable free proxy
     const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
@@ -89,3 +90,6 @@ Buy on ${lowest.exchange} and sell on ${highest.exchange}
   
   return message;
 }
+
+// Fetch the price of a coin on a specific market (exchange)
+// Removed /coin helpers on request
